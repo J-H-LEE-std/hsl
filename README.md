@@ -103,7 +103,7 @@ Elapsed CPU time: 0.052 s
 HS-L is written in **C++20** and uses **CMake** for building.
 
 ```bash
-git clone https://github.com/yourname/hsl.git
+git clone https://github.com/J-H-LEE-std/hsl.git
 cd hsl
 cmake -B build -S .
 cmake --build build --config Release
