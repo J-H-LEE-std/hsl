@@ -18,20 +18,21 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 add_executable(hsl ${PROJ_SRC})
 
+if (WIN32)
+    set_target_properties(hsl PROPERTIES OUTPUT_NAME "hsl")
+elseif (APPLE)
+    set_target_properties(hsl PROPERTIES OUTPUT_NAME "hsl-macos")
+elseif (UNIX)
+    set_target_properties(hsl PROPERTIES OUTPUT_NAME "hsl-linux")
+endif()
+
 include(FetchContent)
 FetchContent_Declare(
         CLI11
         GIT_REPOSITORY https://github.com/CLIUtils/CLI11.git
         GIT_TAG v2.5.0
 )
-FetchContent_Declare(
-        indicators
-        GIT_REPOSITORY https://github.com/p-ranav/indicators.git
-        GIT_TAG v2.3
-)
 
-FetchContent_MakeAvailable(indicators)
 FetchContent_MakeAvailable(CLI11)
 
 target_link_libraries(hsl PRIVATE CLI11::CLI11)
-target_link_libraries(hsl PRIVATE indicators)
