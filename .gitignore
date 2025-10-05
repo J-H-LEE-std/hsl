@@ -1,0 +1,15 @@
+/build/
+/cmake-build-*/
+
+# CMake 캐시 파일
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# OS/IDE 특화
+.DS_Store
+.idea/
+.vscode/
