@@ -13,6 +13,6 @@ namespace hsl{
     };
 
     HSParams loadParams(const std::string& filename);
-    void editParams(HSParams param, int HMS, double HMCR, double PAR, unsigned int maxiter);
+    void editParams(HSParams& param, int HMS, double HMCR, double PAR, unsigned int maxiter);
 }
 #endif

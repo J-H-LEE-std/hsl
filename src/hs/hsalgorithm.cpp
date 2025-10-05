@@ -149,7 +149,7 @@ namespace hsl {
         return p;
     }
 
-    void editParams(HSParams param, int HMS, double HMCR, double PAR, unsigned int maxiter){
+    void editParams(HSParams& param, int HMS, double HMCR, double PAR, unsigned int maxiter){
         param.HMS = HMS;
         param.HMCR = HMCR;
         param.PAR = PAR;
