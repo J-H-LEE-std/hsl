@@ -123,3 +123,5 @@ cmake --build build --config Release
 ## License
 This software is distributed under the BSD 3-Clause License. See the [LICENSE](./LICENSE) file for details.
 
+## Third-Party Software Notice
+For details on third-party software notices, see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
