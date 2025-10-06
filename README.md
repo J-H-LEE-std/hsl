@@ -87,7 +87,9 @@ From `src/main.cpp`, HS-L supports both file-based and command-line input execut
 
 Input:
 ```bash
-./hsl-linux -i input.hs -p parameter.hsparm
+.\hsl.exe -i input.hs -p parameter.hsparm # for Windows
+./hsl-linux -i input.hs -p parameter.hsparm # for macOS
+./hsl-linux -i input.hs -p parameter.hsparm # for Linux
 ```
 Expected Output:
 ```
