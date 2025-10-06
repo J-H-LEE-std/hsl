@@ -4,6 +4,7 @@
 #include <iostream>
 #include "evaluator.h"
 #include "token.h"
+#include "func.h"
 
 namespace hsl {
     using Env = std::unordered_map<std::string, double>;
@@ -13,6 +14,12 @@ namespace hsl {
             return num->value;
         }
         else if (auto id = dynamic_cast<IdentExpr*>(expr)) {
+            // 내장 상수의 경우(ex: e, pi)
+            const auto& K = hsl::builtinConstants();
+            if (auto it = K.find(id->name); it != K.end()) {
+                return it->second;
+            }
+            // 환경 변수
             if (env.find(id->name) == env.end())
                 throw std::runtime_error("Undefined variable: " + id->name);
             return env[id->name];
@@ -36,6 +43,19 @@ namespace hsl {
                 case TokenType::CARET: return std::pow(lhs, rhs); // 여기서는 볼 수 있듯 ^를 pow로 사용
                 default: throw std::runtime_error("Unsupported binary op");
             }
+        }
+        else if (auto call = dynamic_cast<FunctionCallExpr*>(expr)) {
+            const auto& F = hsl::builtinFunctions();
+            auto it = F.find(call->name);
+            if (it == F.end()) {
+                throw std::runtime_error("Unknown function: " + call->name);
+            }
+            std::vector<double> argv;
+            argv.reserve(call->args.size());
+            for (auto* a : call->args) {
+                argv.push_back(evalExpr(a, env));
+            }
+            return it->second(argv);
         }
         throw std::runtime_error("Unknown expression node");
     }

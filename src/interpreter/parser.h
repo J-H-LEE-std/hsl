@@ -38,7 +38,7 @@ namespace hsl {
         Expression* parseIdentifier();
         Expression* parseNumber();
         Expression* parseGroupedExpr();
-
+        Expression* parseFunctionCall(std::string funcName);
 
         [[nodiscard]] int tokenPrecedence(TokenType t) const;
     };

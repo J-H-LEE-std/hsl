@@ -227,7 +227,15 @@ namespace hsl {
     }
 
     Expression* Parser::parseIdentifier() {
-        return new IdentExpr{curToken.literal};
+        std::string name = curToken.literal;
+
+        // 함수 호출 - function :== IDENT "(" expression ")"
+        if (peekTokenIs(TokenType::LPAREN)) {
+            expectPeek(TokenType::LPAREN); // '(' 로 이동
+            return parseFunctionCall(name);
+        }
+
+        return new IdentExpr{name};
     }
 
     Expression* Parser::parseNumber() {
@@ -258,6 +266,35 @@ namespace hsl {
             default:
                 return static_cast<int>(Precedence::LOWEST);
         }
+    }
+
+    Expression* Parser::parseFunctionCall(std::string funcName) {
+        std::vector<Expression*> args;
+
+        // 함수 입력값이 없는 경우는 바로 ) 호출
+        if (peekTokenIs(TokenType::RPAREN)) {
+            nextToken();
+            return new FunctionCallExpr{std::move(funcName), std::move(args)};
+        }
+
+        // 입력값이 1개인 경우
+        nextToken();
+        args.push_back(parseExpression());
+
+        // 입력값이 2개 이상의 경우에는 ','로 구분하고, 그 이후로 계속해서 인자값을 호출한다.
+        while (peekTokenIs(TokenType::COMMA)) {
+            nextToken();
+            nextToken();
+            args.push_back(parseExpression());
+        }
+
+        // 닫는 괄호 없을 때에는 당연히 에러.
+        if (!expectPeek(TokenType::RPAREN)) {
+            errors.emplace_back("Expected ')' after function arguments");
+            return nullptr;
+        }
+
+        return new FunctionCallExpr{std::move(funcName), std::move(args)};
     }
 
 }

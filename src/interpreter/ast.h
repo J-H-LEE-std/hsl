@@ -59,6 +59,12 @@ namespace hsl{
                 : op(op_), left(l), right(r) {}
     };
 
+    struct FunctionCallExpr : Expression {
+        std::string name;
+        std::vector<Expression*> args;
+        FunctionCallExpr(std::string n, std::vector<Expression*> a)
+                : name(std::move(n)), args(std::move(a)) {}
+    }; // 함수 처리에 대한 정의.
 
 }
 

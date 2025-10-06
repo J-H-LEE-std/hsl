@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.27)
 project(hsl)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -16,7 +17,9 @@ file(GLOB_RECURSE PROJ_SRC "src/*.cpp" "src/*.h")
 add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
-add_executable(hsl ${PROJ_SRC})
+add_executable(hsl ${PROJ_SRC}
+        src/interpreter/func.h
+        src/interpreter/func.cpp)
 
 if (WIN32)
     set_target_properties(hsl PROPERTIES OUTPUT_NAME "hsl")
