@@ -77,6 +77,49 @@ namespace hsl {
         }
         std::string name = curToken.literal;
 
+        // x[1] 등의 배열형 변수도 지원. 단, 이미 OBJ에서 sum 등으로 정의된 것이어야 하며, 여기서 배열을 정적으로 선언하는 건 불가능.
+        if (peekTokenIs(TokenType::LBRACKET)) {
+            nextToken();
+            nextToken();
+
+            if (curTokenIs(TokenType::NUMBER_FLOAT)) {
+                errors.emplace_back("Float Range is not supported.");
+                return nullptr;
+            } else if (!curTokenIs(TokenType::NUMBER_INT)){
+                errors.emplace_back("Expected numeric index after '[' in variable name");
+                return nullptr;
+            } // range에 float 토큰은 미지원.
+
+            std::string startIdx = curToken.literal;
+            std::string endIdx = "";
+
+            // 만약 x[1], x[2], x[3] 등 동적으로 정의한 수식들이 전부 똑같다면 [1..3] 이런 식으로 range로 정의.
+            if (peekTokenIs(TokenType::RANGE)) {
+                nextToken();
+                nextToken();
+                if (curTokenIs(TokenType::NUMBER_FLOAT)) {
+                    errors.emplace_back("Float Range is not supported.");
+                    return nullptr;
+                } else if (!curTokenIs(TokenType::NUMBER_INT)){
+                    errors.emplace_back("Expected number after '..' in range declaration");
+                    return nullptr;
+                }
+                endIdx = curToken.literal;
+            }
+
+            if (!peekTokenIs(TokenType::RBRACKET)) {
+                errors.emplace_back("Expected ']' after variable index");
+                return nullptr;
+            }
+            nextToken();
+
+            if (!endIdx.empty()) {
+                name = name + "[" + startIdx + ".." + endIdx + "]";
+            } else {
+                name = name + "[" + startIdx + "]";
+            }
+        }
+
         if (!expectPeek(TokenType::COMMA)) return nullptr;
 
         // min 범위 읽기 -> 다양한 숫자 형식에 대응되기 위해 표현식을 그냥 parsing하는 것으로 변경
@@ -233,6 +276,18 @@ namespace hsl {
         if (peekTokenIs(TokenType::LPAREN)) {
             expectPeek(TokenType::LPAREN); // '(' 로 이동
             return parseFunctionCall(name);
+        }
+
+        // index 호출 - index =
+        if (peekTokenIs(TokenType::LBRACKET)) {
+            expectPeek(TokenType::LBRACKET);
+            nextToken(); // 인덱스 시작
+            Expression* indexExpr = parseExpression();
+            if (!expectPeek(TokenType::RBRACKET)) {
+                errors.emplace_back("Expected ']' after index expression");
+                return nullptr;
+            }
+            return new IndexExpr{name, indexExpr};
         }
 
         return new IdentExpr{name};

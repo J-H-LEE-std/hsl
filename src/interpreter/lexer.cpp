@@ -2,6 +2,7 @@
 #include "lexer.h"
 
 #include <utility>
+#include <iostream>
 
 namespace hsl {
     Lexer::Lexer(std::string input)
@@ -81,8 +82,39 @@ namespace hsl {
                 }
                 break;
 
-            case '[':
-                tok = readSectionKeyword(); // [OBJ], [VAR], [ST], [END]
+            case '[': {
+                // [OBJ], [VAR], [ST], [END]는 그 자체로 예약어 토큰. 이걸 읽기 위해 별도의 조치 마련.
+                size_t savePos = readPos;
+                size_t tmp = savePos;
+                std::string lookahead;
+
+                size_t i = tmp;
+                while (i < input.size() && input[i] != ']' && !std::isspace((unsigned char)input[i])) {
+                    lookahead.push_back(input[i]);
+                    i++;
+                }
+
+                if (lookahead == "OBJ" || lookahead == "VAR" ||
+                    lookahead == "ST"  || lookahead == "END") {
+                    tok = readSectionKeyword(); // 예약어는 별도로 분기.
+                } else {
+                    tok = Token{TokenType::LBRACKET, "[", line, column};
+                }
+
+                break;
+            }
+
+            case ']':
+                tok = Token{TokenType::RBRACKET, "]", line, column};
+                break;
+
+            case '.':
+                if (peekChar() == '.') {
+                    readChar();
+                    tok = Token{TokenType::RANGE, "..", line, column};
+                } else {
+                    tok = Token{TokenType::ILLEGAL, ".", line, column};
+                }
                 break;
 
             case '#':
@@ -142,23 +174,17 @@ namespace hsl {
     }
 
     Token Lexer::readIdentifier() {
-        const int startCol = column;
-        size_t startPos = pos;
-
-        // 첫 글자의 조건은 [A-Za-z_]
+        const int startCol = column; size_t startPos = pos; // 첫 글자의 조건은 [A-Za-z_]
         if (!(std::isalpha(ch) || ch == '_')) {
             return Token{TokenType::ILLEGAL, std::string(1, ch), line, startCol};
-        }
-        readChar();
+        } readChar();
 
         // 이후로는 [A-Za-z0-9_]
         while (std::isalnum(ch) || ch == '_') {
             readChar();
         }
-
         std::string literal = input.substr(startPos, pos - startPos);
         const TokenType type = lookupIdent(literal);
-
         return Token{type, literal, line, startCol};
     }
 
@@ -184,16 +210,16 @@ namespace hsl {
 
         // 소수부
         if (ch == '.') {
-            if (std::isdigit(static_cast<unsigned char>(peekChar()))) {
+            char p = peekChar();
+            // 소수의 경우
+            if (std::isdigit(static_cast<unsigned char>(p))) {
                 isFloat = true;
                 readChar(); // '.' 소비
-                while (std::isdigit(static_cast<unsigned char>(ch))) {
-                    readChar();
-                }
+                while (std::isdigit(static_cast<unsigned char>(ch))) readChar();
+            } else if (p == '.') {
+                ; // ..는 range로 처리해야하므로 따로 여기서 처리 안 하고 TokenType::RANGE 처리할 때 같이 처리.
             } else {
-                // 맨 뒤가 '.'이거나 '.abc' 같은 경우 → ILLEGAL
-                std::string literal = input.substr(startPos, pos - startPos + 1);
-                return Token{TokenType::ILLEGAL, literal, startLine, startCol};
+                ; // '1.' 같은 유형은 ILLEGAL로 처리 예정, 여기서 하지 않음.
             }
         }
 

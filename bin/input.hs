@@ -1,5 +1,5 @@
-[OBJ] min (100*(y - x^2)^2 + (1 - x)^2) + (100*(z - y^2)^2 + (1 - y)^2)
-[VAR] x, -5, 10, any
-[VAR] y, -5, 10, any
-[VAR] z, -5, 10, any
+[OBJ] min 10 * 3 + sum(i, 1, 3, x[i]^2 - 10 * cos(2 * pi * x[i]))
+[VAR] x[1], -5.12, 5.12, any
+[VAR] x[2], -5.12, 5.12, any
+[VAR] x[3], -5.12, 5.12, any
 [END]

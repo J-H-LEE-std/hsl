@@ -66,6 +66,14 @@ namespace hsl{
                 : name(std::move(n)), args(std::move(a)) {}
     }; // 함수 처리에 대한 정의.
 
+    struct IndexExpr : Expression {
+        std::string name;         // 예: "x"
+        Expression* index;        // 예: i (식일 수도 있음)
+        IndexExpr(std::string n, Expression* idx)
+                : name(std::move(n)), index(idx) {}
+    };
+
+
 }
 
 #endif

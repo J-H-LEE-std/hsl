@@ -45,11 +45,40 @@ namespace hsl {
             }
         }
         else if (auto call = dynamic_cast<FunctionCallExpr*>(expr)) {
+            // 내장 함수 중 sum(sigma)와 product(pi)는 특수하게 작동 -> 따로 동적 할당 등이 필요하기 때문에 별도로 정의.
+            if (call->name == "sum" || call->name == "product") {
+                if (call->args.size() != 4)
+                    throw std::runtime_error(call->name + "() expects 4 arguments: (i, start, end, expr)");
+
+                auto* idExpr = dynamic_cast<IdentExpr*>(call->args[0]);
+                if (!idExpr)
+                    throw std::runtime_error(call->name + "(): first argument must be an identifier");
+
+                std::string varName = idExpr->name;
+                double start = evalExpr(call->args[1], env);
+                double end   = evalExpr(call->args[2], env);
+
+                // 초기값 설정
+                double result = (call->name == "sum") ? 0.0 : 1.0;
+
+                for (int i = static_cast<int>(start); i <= static_cast<int>(end); ++i) {
+                    env[varName] = i;
+                    double val = evalExpr(call->args[3], env);
+                    if (call->name == "sum") result += val;
+                    else result *= val;
+                }
+
+                env.erase(varName);
+                return result;
+            }
+
+            //나머지 내장함수는 별도로 정의된 built-in으로 해결.
             const auto& F = hsl::builtinFunctions();
             auto it = F.find(call->name);
             if (it == F.end()) {
                 throw std::runtime_error("Unknown function: " + call->name);
             }
+
             std::vector<double> argv;
             argv.reserve(call->args.size());
             for (auto* a : call->args) {
@@ -57,6 +86,23 @@ namespace hsl {
             }
             return it->second(argv);
         }
+        else if (auto idx = dynamic_cast<IndexExpr*>(expr)) {
+            double index = evalExpr(idx->index, env);
+            int i = static_cast<int>(index);
+            std::string key = idx->name + "[" + std::to_string(i) + "]";
+
+            auto it = env.find(key);
+            if (it == env.end()) {
+                throw std::runtime_error(
+                        "Undefined variable access: '" + key +
+                        "'.\nMake sure it is declared in [VAR] section (e.g., [VAR] "
+                        + idx->name + "[" + std::to_string(i) + "], ... )");
+            } // 만약 range와 관련된 변수들이 제대로 정의가 되지 않았다면(ex: sum(i, 1, 3, x[i])에서 x[1], x[2]만 정의한 경우, 이 경우는 error.
+
+            return it->second;
+        }
+
+
         throw std::runtime_error("Unknown expression node");
     }
 
@@ -83,8 +129,27 @@ namespace hsl {
             double lower = evalExpr(v->lower, env);
             double upper = evalExpr(v->upper, env);
 
-            Variable var{v->name, {lower, upper}, v->isInt};
-            prob.variables.push_back(var);
+            std::string name = v->name;
+            size_t lb = name.find('[');
+            size_t dots = name.find("..", lb);
+            size_t rb = name.find(']', dots);
+
+            if (dots != std::string::npos && rb != std::string::npos) {
+                // ex: x[1..3]
+                std::string base = name.substr(0, lb);
+                int start = std::stoi(name.substr(lb + 1, dots - (lb + 1)));
+                int end   = std::stoi(name.substr(dots + 2, rb - (dots + 2)));
+
+                for (int i = start; i <= end; ++i) {
+                    std::string expanded = base + "[" + std::to_string(i) + "]";
+                    Variable var{expanded, {lower, upper}, v->isInt};
+                    prob.variables.push_back(var);
+                } // range로 정의된 건 x[1], x[2]꼴로 하나씩 정의
+            } else {
+                // 단일 변수
+                Variable var{name, {lower, upper}, v->isInt};
+                prob.variables.push_back(var);
+            }
         } // 변수 정의 및 범위 할당이 실제로 이루어짐
 
         Objective* obj = program->obj;

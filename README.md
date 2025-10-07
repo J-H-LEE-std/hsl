@@ -58,7 +58,7 @@ or more examples, refer to the files `input.hs` and `parameter.hsparm` included 
 | `[VAR]` | Declares a variable. Syntax: `[VAR] <name>, <lower>, <upper>, <type>` <br>Type can be `int` or `any` (continuous). |
 | `[ST]` | Defines a constraint (statement). Multiple constraints can be declared. |
 | `[END]` | Marks the end of the problem definition. |
-| **Operators** | Supports `+`, `-`, `*`, `/`, `^` for arithmetic expressions. ^ will work for power operation. |
+| **Operators** | Supports `+`, `-`, `*`, `/`, `^` for arithmetic expressions. `^` will work for power operation. |
 
 ---
 

@@ -16,11 +16,11 @@ namespace hsl {
 
         // 연산자
         PLUS, MINUS, ASTERISK, SLASH,
-        LPAREN, RPAREN, COMMA,
-        LEQ, GEQ, LT, GT, EQ, NEQ, CARET,
+        LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA,
+        LEQ, GEQ, LT, GT, EQ, NEQ, CARET, RANGE,
 
         // 기타
-        END_OF_FILE, ILLEGAL
+        END_OF_FILE, ILLEGAL,
     };
 
     struct Token {
