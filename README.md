@@ -15,14 +15,23 @@ Typical use cases include:
 - Constrained or unconstrained mathematical problems
 - Metaheuristic algorithm research and benchmarking
 
----
-
 Each HS-L project typically consists of two files:
 
 | File | Purpose |
 |------|----------|
 | `input.hs` | Defines the problem structure (objective, variables, constraints) |
 | `parameter.hsparm` | Defines Harmony Search parameters (HMS, HMCR, PAR, etc.) |
+
+---
+
+## Implementation Details
+
+* Lexer / Parser — Tokenizes and interprets HS-L syntax.
+* Evaluator — Translates parsed expressions into evaluable objective functions.
+* Optimizer Core — Implements Harmony Search algorithm with tunable parameters.
+* CLI Interface — Built using CLI11.
+
+---
 
 ## Example Input
 
@@ -79,6 +88,14 @@ These parameters are automatically loaded from `parameter.hsparm` unless overrid
 
 ---
 
+## Function Support
+
+HS-L now supports **built-in mathematical and user-defined function calls** within expressions.  
+Functions can be used in `[OBJ]`, `[ST]`, or nested within other expressions.
+For more information, please refer documents about function (TBD).
+
+---
+
 ## Command Line Usage
 
 From `src/main.cpp`, HS-L supports both file-based and command-line input execution.
@@ -113,17 +130,31 @@ cmake --build build --config Release
 
 ---
 
-## Implementation Details
-
-* Lexer / Parser — Tokenizes and interprets HS-L syntax.
-* Evaluator — Translates parsed expressions into evaluable objective functions.
-* Optimizer Core — Implements Harmony Search algorithm with tunable parameters.
-* CLI Interface — Built using CLI11.
-  
----
 
 ## License
 This software is distributed under the BSD 3-Clause License. See the [LICENSE](./LICENSE) file for details.
 
 ## Third-Party Software Notice
 For details on third-party software notices, see [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md).
+
+## Acknowledgement
+
+This software is an implementation based on the design proposal by Prof. Zong Woo Geem.
+
+---
+
+## References
+* Harmony Search
+
+Zong Woo Geem, Joong Hoon Kim, and G. V. Loganathan, “A New Heuristic Optimization Algorithm: Harmony Search,” SIMULATION, vol. 76, no. 2, pp. 60–68, Feb. 2001, doi: 10.1177/003754970107600201.
+
+http://www.harmonysearch.info/
+
+* Interpreter Writing
+
+https://craftinginterpreters.com/
+
+R. Nystrom, Crafting Interpreters.Genever Benning, 2021.
+
+T. Ball, Writing an Interpreter in Go. Ball Thorsten, 2020. 
+
