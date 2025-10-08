@@ -92,7 +92,7 @@ These parameters are automatically loaded from `parameter.hsparm` unless overrid
 
 HS-L now supports **built-in mathematical and user-defined function calls** within expressions.  
 Functions can be used in `[OBJ]`, `[ST]`, or nested within other expressions.
-For more information, please refer documents about function (TBD).
+For more information, please refer documents about [Built-in Functions](https://github.com/J-H-LEE-std/hsl/wiki/Built%E2%80%90in-Function).
 
 ---
 
