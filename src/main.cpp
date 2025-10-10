@@ -1,4 +1,5 @@
 #include <iostream>
+#include <random>
 #include <CLI/CLI.hpp>
 #include "hs/params.h"
 #include "hs/runner.h"
@@ -12,6 +13,7 @@ int main(int argc, char** argv) {
     double PAR = 0.7;
     int HMS = 30;
     unsigned int max_iter = 30000;
+    unsigned int seed = std::random_device{}();
 
     app.add_option("-s,--source", source_file, "Source file path");
     app.add_option("-p,--param", param_file, "Parameter file path");
@@ -19,6 +21,7 @@ int main(int argc, char** argv) {
     app.add_option("--PAR", PAR, "Pitch Adjusting Rate");
     app.add_option("--HMS", HMS, "Harmony Memory Size");
     app.add_option("--max_iter", max_iter, "Maximum number of iterations");
+    app.add_option("--seed", seed, "Random seed for algorithm");
 
     CLI11_PARSE(app, argc, argv);
     std::cout << "[INFO] Starting HS-L...\n" << std::flush;
@@ -29,7 +32,7 @@ int main(int argc, char** argv) {
     hsl::editParams(params, HMS, HMCR, PAR, max_iter);
 
     try {
-        hsl::Harmony best = hsl::runHarmonySearchFromFile(source_file, params);
+        hsl::Harmony best = hsl::runHarmonySearchFromFile(source_file, params, seed);
         std::cout << "=== Harmony Search Result ===" << std::endl;
         std::cout << "Best value: " << best.value << std::endl;
         for (size_t i = 0; i < best.vars.size(); ++i) {

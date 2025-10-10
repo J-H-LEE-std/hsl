@@ -18,18 +18,19 @@ namespace hsl {
         return ss.str();
     }
 
-    Harmony runHarmonySearch(const HSProblem& prob, const HSParams& params) {
-        HarmonySearch hs(prob, params);
+    Harmony runHarmonySearch(const HSProblem& prob, const HSParams& params, unsigned int seed) {
+        HarmonySearch hs(prob, params, seed);
         return hs.optimize();
     }
 
-    Harmony runHarmonySearch(Program* program, const HSParams& params) {
+    Harmony runHarmonySearch(Program* program, const HSParams& params, unsigned int seed) {
         HSProblem prob = buildHSProblem(program);
-        return runHarmonySearch(prob, params);
+        return runHarmonySearch(prob, params, seed);
     }
 
     Harmony runHarmonySearchFromFile(const std::string& hsFilePath,
                                      const HSParams& params,
+                                     unsigned int seed,
                                      std::vector<std::string>* parseErrors) {
         std::string src = readAll(hsFilePath);
 
@@ -52,7 +53,7 @@ namespace hsl {
             throw std::runtime_error(msg.str());
         }
 
-        return runHarmonySearch(program, params);
+        return runHarmonySearch(program, params, seed);
     }
 
 }

@@ -15,12 +15,16 @@ Typical use cases include:
 - Constrained or unconstrained mathematical problems
 - Metaheuristic algorithm research and benchmarking
 
+---
+
 Each HS-L project typically consists of two files:
 
 | File | Purpose |
 |------|----------|
 | `input.hs` | Defines the problem structure (objective, variables, constraints) |
 | `parameter.hsparm` | Defines Harmony Search parameters (HMS, HMCR, PAR, etc.) |
+
+For a detailed description of the program, please refer to the [Wiki for this repository](https://github.com/J-H-LEE-std/hsl/wiki).
 
 ---
 
@@ -95,7 +99,6 @@ Functions can be used in `[OBJ]`, `[ST]`, or nested within other expressions.
 For more information, please refer documents about [Built-in Functions](https://github.com/J-H-LEE-std/hsl/wiki/Built%E2%80%90in-Function).
 
 ---
-
 ## Command Line Usage
 
 From `src/main.cpp`, HS-L supports both file-based and command-line input execution.
@@ -110,10 +113,12 @@ Input:
 ```
 Expected Output:
 ```
-Best value: -0.201976
-x1 = 0.786037
-x2 = 0.619003
-Elapsed CPU time: 0.052 s
+=== Harmony Search Result ===
+Best value: -0.0663723
+  x1 = -0.00438216
+  x2 = -0.0136801
+  x3 = -0.0113302
+CPU Time: 1.22576 sec
 ```
 
 ---
