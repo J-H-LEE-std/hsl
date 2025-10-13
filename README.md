@@ -107,9 +107,9 @@ From `src/main.cpp`, HS-L supports both file-based and command-line input execut
 
 Input:
 ```bash
-.\hsl.exe -i input.hs -p parameter.hsparm # for Windows
-./hsl-linux -i input.hs -p parameter.hsparm # for macOS
-./hsl-linux -i input.hs -p parameter.hsparm # for Linux
+.\hsl.exe -s input.hs -p parameter.hsparm # for Windows
+./hsl-linux -s input.hs -p parameter.hsparm # for macOS
+./hsl-linux -s input.hs -p parameter.hsparm # for Linux
 ```
 Expected Output:
 ```
@@ -159,7 +159,7 @@ http://www.harmonysearch.info/
 
 https://craftinginterpreters.com/
 
-R. Nystrom, Crafting Interpreters.Genever Benning, 2021.
+R. Nystrom, Crafting Interpreters. Genever Benning, 2021.
 
 T. Ball, Writing an Interpreter in Go. Ball Thorsten, 2020. 
 
