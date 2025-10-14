@@ -19,7 +19,7 @@ namespace hsl {
         if (std::isinf(pen)) {
             return problem.maximize ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::infinity(); // 무효 해 처리
         }
-        return problem.maximize ? obj : -obj; // 최소화는 부호 반전
+        return obj; // 최소화를 부호 반전했다가 문제가 생김.
     }
 
     // 제약을 만족하는 해 생성
@@ -54,9 +54,14 @@ namespace hsl {
 
     // HM 업데이트 (worst 교체)
     void HarmonySearch::insertHarmony(const Harmony& h) {
-        auto worstIt = std::min_element(HM.begin(), HM.end());
-        if (h.value > worstIt->value) {
-            *worstIt = h;
+        if (problem.maximize) {
+            auto worstIt = std::min_element(HM.begin(), HM.end(),
+                                            [](const Harmony& a, const Harmony& b) { return a.value < b.value; });
+            if (h.value > worstIt->value) *worstIt = h; // maximize의 경우는 최적값이 제일 작은 게 제일 안 좋은 해.
+        } else {
+            auto worstIt = std::max_element(HM.begin(), HM.end(),
+                                            [](const Harmony& a, const Harmony& b) { return a.value < b.value; });
+            if (h.value < worstIt->value) *worstIt = h; // minimize의 경우는 최적값이 제일 큰 게 제일 안 좋은 해.
         }
     }
 

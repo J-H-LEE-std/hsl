@@ -11,6 +11,7 @@ namespace hsl {
     }
 
     Token Lexer::nextToken() {
+        skipIrrelevant();
         skipWhitespace();
 
         Token tok;
@@ -270,6 +271,21 @@ namespace hsl {
 
     char Lexer::peekChar() const {
         return (readPos < input.size()) ? input[readPos] : '\0';
+    }
+
+    void Lexer::skipIrrelevant() {
+        for (;;) {
+            // 공백 스킵
+            while (isspace(ch)) readChar();
+
+            // 주석 스킵
+            if (ch == '#') {
+                skipComment();
+                continue;
+            }
+
+            break;
+        }
     }
 
 }

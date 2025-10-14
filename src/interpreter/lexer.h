@@ -28,6 +28,7 @@ namespace hsl{
         Token readNumber();
         Token readSectionKeyword(); // [OBJ], [VAR], [ST], [END] 처리용
         static TokenType lookupIdent(const std::string &ident);
+        void skipIrrelevant();
     };
 
 }
