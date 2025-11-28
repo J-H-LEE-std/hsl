@@ -122,9 +122,22 @@ CPU Time: 1.22576 sec
 ```
 
 ---
+## GUI support
+HS-L now supports GUI. For more information, please refer please refer to the [GUI descriptions in Wiki](https://github.com/J-H-LEE-std/hsl/wiki/GUI-Interface).
+
+---
 ##  How to Build
 
-HS-L is written in **C++20** and uses **CMake** for building.
+HS-L now provides two executables:
+
+* **CLI version**: command-line solver (`hsl`)
+* **GUI version**: wxWidgets-based graphical interface (`hsl_gui`)
+
+Both are written in **C++20** and built using **CMake**.
+The GUI version additionally requires **wxWidgets**. GUI cannot be built unless wxWidgets is installed.
+Before you build HS-L, please install it beforehand following guide for [Installing wxWidgets](https://docs.wxwidgets.org/3.2/overview_install.html). 
+
+### Build from Source
 
 ```bash
 git clone https://github.com/J-H-LEE-std/hsl.git
@@ -132,6 +145,8 @@ cd hsl
 cmake -B build -S .
 cmake --build build --config Release
 ```
+
+If build failed, try to make build directory while set wxWidgets directory manually by using **-DwxWidgets_ROOT_DIR** parameter.
 
 ---
 

@@ -37,7 +37,29 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+---
+
+## wxWidgets
+
+**Repository:** https://github.com/wxWidgets/wxWidgets  
+**License:** wxWidgets License (LGPL with an exception)  
+**Copyright:** (c) 1998–2025 wxWidgets development team
+
+The wxWidgets library is distributed under the terms of the wxWidgets License,
+which is essentially the GNU Library General Public License (LGPL) with an
+additional exception allowing distribution of application binaries that link
+to the library without requiring the application to be open-sourced or
+licensed under LGPL-compatible terms.
+
+Full license text is available at:  
+https://www.wxwidgets.org/about/licence/
+
+This exception permits static linking of wxWidgets in both open-source and
+commercial applications, provided that any modifications to wxWidgets itself
+are released under the same license.
+
+
 
 ---
 
-_Last updated: October 2025_
+_Last updated: Novemnber 28th, 2025_
