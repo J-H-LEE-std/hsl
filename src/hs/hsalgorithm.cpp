@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include "hsalgorithm.h"
+#include "io.h"   // hsl::cout 정의 헤더 (GUI/CLI 출력 통합)
 
 namespace hsl {
 
@@ -16,10 +17,14 @@ namespace hsl {
     double HarmonySearch::evaluate(const std::vector<double>& solution) {
         double obj = problem.objective(solution);
         double pen = problem.penalty(solution);
+
         if (std::isinf(pen)) {
-            return problem.maximize ? std::numeric_limits<double>::lowest() : std::numeric_limits<double>::infinity(); // 무효 해 처리
+            // 제약 위반은 무효 해로 간주
+            return problem.maximize ?
+                std::numeric_limits<double>::lowest() :
+                std::numeric_limits<double>::infinity();
         }
-        return obj; // 최소화를 부호 반전했다가 문제가 생김.
+        return obj; // 최소화를 부호 반전했다가 문제가 생김 → 그대로 반환
     }
 
     // 제약을 만족하는 해 생성
@@ -33,12 +38,14 @@ namespace hsl {
                 const auto& var = problem.variables[i];
                 if (var.isInt) {
                     std::uniform_int_distribution<int> idist(
-                            static_cast<int>(var.range.first),
-                            static_cast<int>(var.range.second));
+                        static_cast<int>(var.range.first),
+                        static_cast<int>(var.range.second)
+                    );
                     vars[i] = idist(rng);
                 } else {
                     std::uniform_real_distribution<double> rdist(
-                            var.range.first, var.range.second);
+                        var.range.first, var.range.second
+                    );
                     vars[i] = rdist(rng);
                 }
             }
@@ -48,20 +55,24 @@ namespace hsl {
                 double val = evaluate(vars);
                 return {vars, val};
             }
-            // 위반이면 다시 루프 → VBA판과 동일
+            // 위반이면 다시 루프 (VBA판과 동일)
         }
     }
 
     // HM 업데이트 (worst 교체)
     void HarmonySearch::insertHarmony(const Harmony& h) {
         if (problem.maximize) {
-            auto worstIt = std::min_element(HM.begin(), HM.end(),
-                                            [](const Harmony& a, const Harmony& b) { return a.value < b.value; });
-            if (h.value > worstIt->value) *worstIt = h; // maximize의 경우는 최적값이 제일 작은 게 제일 안 좋은 해.
+            auto worstIt = std::min_element(
+                HM.begin(), HM.end(),
+                [](const Harmony& a, const Harmony& b) { return a.value < b.value; }
+            );
+            if (h.value > worstIt->value) *worstIt = h;
         } else {
-            auto worstIt = std::max_element(HM.begin(), HM.end(),
-                                            [](const Harmony& a, const Harmony& b) { return a.value < b.value; });
-            if (h.value < worstIt->value) *worstIt = h; // minimize의 경우는 최적값이 제일 큰 게 제일 안 좋은 해.
+            auto worstIt = std::max_element(
+                HM.begin(), HM.end(),
+                [](const Harmony& a, const Harmony& b) { return a.value < b.value; }
+            );
+            if (h.value < worstIt->value) *worstIt = h;
         }
     }
 
@@ -76,16 +87,16 @@ namespace hsl {
 
         // 2. 진행률 표시줄 설정
         const int barWidth = 50;
-        std::cerr << "[INFO] Optimization started..." << std::endl;
+        hsl::cout << "[INFO] Optimization started..." << std::endl;
 
         auto print_progress = [&](int iter) {
             float progress = static_cast<float>(iter) / params.MaxImp;
             int pos = static_cast<int>(barWidth * progress);
 
-            std::cerr << "\r[";
+            hsl::cout << "\r[";
             for (int i = 0; i < barWidth; ++i)
-                std::cerr << (i < pos ? "#" : "-");
-            std::cerr << "] "
+                hsl::cout << (i < pos ? "#" : "-");
+            hsl::cout << "] "
                       << std::setw(3) << int(progress * 100.0f) << "% "
                       << std::flush;
         };
@@ -113,12 +124,14 @@ namespace hsl {
                     const auto& var = problem.variables[i];
                     if (var.isInt) {
                         std::uniform_int_distribution<int> idist(
-                                static_cast<int>(var.range.first),
-                                static_cast<int>(var.range.second));
+                            static_cast<int>(var.range.first),
+                            static_cast<int>(var.range.second)
+                        );
                         newVars[i] = idist(rng);
                     } else {
                         std::uniform_real_distribution<double> rdist(
-                                var.range.first, var.range.second);
+                            var.range.first, var.range.second
+                        );
                         newVars[i] = rdist(rng);
                     }
                 }
@@ -129,17 +142,17 @@ namespace hsl {
                 insertHarmony({newVars, newVal});
             }
 
-            // tqdm 스타일 한 줄 갱신
             if (iter % 100 == 0 || iter == params.MaxImp - 1)
                 print_progress(iter + 1);
         }
 
-        std::cerr << std::endl; // 줄 마무리
+        hsl::cout << std::endl;
 
         // 4. 최적 해 반환
         return *std::max_element(HM.begin(), HM.end());
     }
 
+    // 파라미터 로드/수정
     HSParams loadParams(const std::string& filename) {
         HSParams p{};
         std::ifstream in(filename);
@@ -154,11 +167,11 @@ namespace hsl {
         return p;
     }
 
-    void editParams(HSParams& param, int HMS, double HMCR, double PAR, unsigned int maxiter){
+    void editParams(HSParams& param, int HMS, double HMCR, double PAR, unsigned int maxiter) {
         param.HMS = HMS;
         param.HMCR = HMCR;
         param.PAR = PAR;
         param.MaxImp = maxiter;
     }
 
-}
+} // namespace hsl

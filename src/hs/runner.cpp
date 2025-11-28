@@ -56,4 +56,26 @@ namespace hsl {
         return runHarmonySearch(program, params, seed);
     }
 
+    HSResult runHarmonySearch(const HSProblem& prob,
+                          const HSParams& params,
+                          unsigned int seed,
+                          std::ostream& log)
+    {
+    auto start = std::chrono::high_resolution_clock::now();
+    HarmonySearch hs(prob, params, seed);
+
+    log << "[HS-L] Optimization started..." << std::endl;
+    Harmony best = hs.optimize();
+    log << "[HS-L] Optimization finished." << std::endl;
+
+    auto end = std::chrono::high_resolution_clock::now();
+    double elapsed = std::chrono::duration<double>(end - start).count();
+
+    HSResult result;
+    result.value = best.value;
+    result.vars = best.vars;
+    result.cpu_time = elapsed;
+    return result;
+}
+
 }
