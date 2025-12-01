@@ -135,7 +135,7 @@ HS-L now provides two executables:
 
 Both are written in **C++20** and built using **CMake**.
 The GUI version additionally requires **wxWidgets**. GUI cannot be built unless wxWidgets is installed.
-Before you build HS-L, please install it beforehand following guide for [Installing wxWidgets](https://docs.wxwidgets.org/3.2/overview_install.html). 
+Before you build HS-L, please install it beforehand following guide for [Installing wxWidgets](https://docs.wxwidgets.org/3.2/overview_install.html). We recommand build and install wxWidgets as static library when build this project.
 
 ### Build from Source
 
