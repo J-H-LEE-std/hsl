@@ -159,7 +159,9 @@ For details on third-party software notices, see [THIRD_PARTY_NOTICES.md](./THIR
 
 ## Acknowledgement
 
-This software is an implementation based on the design proposal by Prof. Zong Woo Geem.
+This software is an implementation based on the design proposal and the [original VBA-based HS-L implementation](https://github.com/ghlee490/Excel-HSL) by Prof. Zong Woo Geem and research team, which is distributed under the MIT License.
+Please Refer [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md) for VBA-based software license.
+
 
 ---
 
