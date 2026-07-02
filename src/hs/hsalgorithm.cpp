@@ -1,36 +1,84 @@
+/**
+ * @file hsalgorithm.cpp
+ * @brief Detailed implementation for essential HS algorithm.
+ * @author Lee Jaehyeong(J-H-LEE-std)
+ * @date 2025-10-05
+ */
+
 #include <iomanip>
 #include <algorithm>
 #include <limits>
 #include <iostream>
 #include <fstream>
+#include <numeric>
+#include <stdexcept>
+#include <chrono>
 #include "hsalgorithm.h"
-#include "io.h"   // hsl::cout 정의 헤더 (GUI/CLI 출력 통합)
+#include "io.h"
+#include "../log/ExperimentLogger.h"
 
 namespace hsl {
+    // Functions for comparison and calculation with each Harmony
+    namespace {
+        bool isBetter(const Harmony& a, const Harmony& b, bool maximize) {
+            return maximize ? a.value > b.value : a.value < b.value;
+        }
 
-    HarmonySearch::HarmonySearch(const HSProblem& prob, const HSParams& params, unsigned int seed)
-            : problem(prob), params(params) {
-        rng.seed(seed);
+        const Harmony& pickBest(const std::vector<Harmony>& hm, bool maximize) {
+            if (hm.empty()) throw std::runtime_error("Harmony memory is empty");
+            if (maximize) {
+                return *std::max_element(
+                    hm.begin(), hm.end(),
+                    [](const Harmony& lhs, const Harmony& rhs) { return lhs.value < rhs.value; }
+                );
+            }
+            return *std::min_element(
+                hm.begin(), hm.end(),
+                [](const Harmony& lhs, const Harmony& rhs) { return lhs.value < rhs.value; }
+            );
+        }
+
+        double averageValue(const std::vector<Harmony>& hm) {
+            if (hm.empty()) return 0.0;
+            double sum = std::accumulate(
+                hm.begin(), hm.end(), 0.0,
+                [](double acc, const Harmony& h) { return acc + h.value; }
+            );
+            return sum / static_cast<double>(hm.size());
+        }
     }
 
-    // 해를 평가
+    HarmonySearch::HarmonySearch(const HSProblem& prob, const HSParams& params, unsigned int seed,
+                                 ExperimentLogger* logger, bool suppressProgress)
+            : problem(prob), params(params), rng(seed), logger(logger), suppressProgress(suppressProgress) {
+    }
+
+    /**
+     * @brief Evaluates the objective value of a given solution while considering constraints.
+     * @param solution A vector of values representing a candidate solution.
+     * @return The objective value. Returns infinity or lowest double if constraints are violated.
+     * @note Penalty handling follows a "hard constraint" approach by invalidating infeasible solutions.
+     */
     double HarmonySearch::evaluate(const std::vector<double>& solution) {
         double obj = problem.objective(solution);
         double pen = problem.penalty(solution);
 
         if (std::isinf(pen)) {
-            // 제약 위반은 무효 해로 간주
+            // Constraint violation is considered as invalid solution.
             return problem.maximize ?
                 std::numeric_limits<double>::lowest() :
                 std::numeric_limits<double>::infinity();
         }
-        return obj; // 최소화를 부호 반전했다가 문제가 생김 → 그대로 반환
+        return obj; // Due to unray problem, return value not inversed.
     }
 
-    // 제약을 만족하는 해 생성
+    /**
+     * @brief Generates a random solution that satisfies all defined constraints.
+     * @return A Harmony object containing a feasible set of variables and its evaluated value.
+     * @details Uses a trial-and-error approach (re-sampling) until a valid solution is found,
+     * ensuring the initial Harmony Memory (HM) is filled with feasible candidates.
+     */
     Harmony HarmonySearch::generateFeasibleSolution() {
-        std::uniform_real_distribution<double> dist01(0.0, 1.0);
-
         while (true) {
             std::vector<double> vars(problem.variables.size());
 
@@ -50,16 +98,21 @@ namespace hsl {
                 }
             }
 
-            // 제약 조건 확인
+            // Check constraint
             if (problem.penalty(vars) == 0.0) {
                 double val = evaluate(vars);
                 return {vars, val};
             }
-            // 위반이면 다시 루프 (VBA판과 동일)
+            // Loop when invalid solution created.
         }
     }
 
-    // HM 업데이트 (worst 교체)
+    /**
+     * @brief Updates the Harmony Memory by replacing the worst harmony with a better candidate.
+     * @param h The new candidate harmony to be considered for the memory.
+     * @details Depending on whether the problem is maximization or minimization,
+     * it identifies the worst performing member in HM and replaces it if the candidate is superior.
+     */
     void HarmonySearch::insertHarmony(const Harmony& h) {
         if (problem.maximize) {
             auto worstIt = std::min_element(
@@ -76,20 +129,30 @@ namespace hsl {
         }
     }
 
-    // 최적화 수행
+    /**
+     * @brief Executes the main Harmony Search optimization loop.
+     * @return The best harmony found after reaching the maximum number of improvisations.
+     * @details The process involves:
+     * 1. Initializing the Harmony Memory (HM).
+     * 2. Improvising new harmonies based on HMCR and PAR parameters.
+     * 3. Updating the HM and logging progress/results.
+     */
     Harmony HarmonySearch::optimize() {
         HM.clear();
         HM.reserve(params.HMS);
 
-        // 1. 초기 HM 생성
+        // 1. Initial HM generation
         for (int i = 0; i < params.HMS; ++i)
             HM.push_back(generateFeasibleSolution());
 
-        // 2. 진행률 표시줄 설정
+        Harmony bestSoFar = pickBest(HM, problem.maximize);
+
+        // 2. Setting Progressbar
         const int barWidth = 50;
-        hsl::cout << "[INFO] Optimization started..." << std::endl;
+        if (!suppressProgress) hsl::cout << "[INFO] Optimization started...\n";
 
         auto print_progress = [&](int iter) {
+            if (suppressProgress) return;
             float progress = static_cast<float>(iter) / params.MaxImp;
             int pos = static_cast<int>(barWidth * progress);
 
@@ -101,8 +164,8 @@ namespace hsl {
                       << std::flush;
         };
 
-        // 3. 반복 개선
-        for (int iter = 0; iter < params.MaxImp; ++iter) {
+        // 3. Iterate and update solutions
+        for (int iter = 1; iter <= static_cast<int>(params.MaxImp); ++iter) {
             std::vector<double> newVars(problem.variables.size());
 
             for (size_t i = 0; i < problem.variables.size(); ++i) {
@@ -142,36 +205,82 @@ namespace hsl {
                 insertHarmony({newVars, newVal});
             }
 
-            if (iter % 100 == 0 || iter == params.MaxImp - 1)
-                print_progress(iter + 1);
+            Harmony currentBest = pickBest(HM, problem.maximize);
+            double avg = averageValue(HM);
+            if (logger) {
+                logger->logIteration(iter, currentBest, avg, HM, problem.maximize);
+            }
+            if (isBetter(currentBest, bestSoFar, problem.maximize)) {
+                bestSoFar = currentBest;
+                if (logger) logger->logNewBest(iter, bestSoFar);
+            }
+
+            if (iter % 100 == 0 || iter == params.MaxImp)
+                print_progress(iter);
         }
 
-        hsl::cout << std::endl;
+        if (!suppressProgress) hsl::cout << '\n';
 
-        // 4. 최적 해 반환
-        return *std::max_element(HM.begin(), HM.end());
+        // 4. Return optimal solution
+        return pickBest(HM, problem.maximize);
     }
 
-    // 파라미터 로드/수정
+    /**
+     * @brief Loads Harmony Search parameters from a configuration file.
+     * @param filename Path to the .hsparm file.
+     * @return An HSParams structure populated with the loaded values.
+     * @note Expected format: "KEY,VALUE" (e.g., HMS,30).
+     * @note If parameter file not provided or cannot be open, initial parameter is used.
+     */
     HSParams loadParams(const std::string& filename) {
         HSParams p{};
         std::ifstream in(filename);
-        std::string key;
-        while (in >> key) {
-            if (key == "HMS") in.ignore(1, ',') >> p.HMS;
-            else if (key == "HMCR") in.ignore(1, ',') >> p.HMCR;
-            else if (key == "PAR") in.ignore(1, ',') >> p.PAR;
-            else if (key == "MaxImp") in.ignore(1, ',') >> p.MaxImp;
-            else if (key == "N_Seg") in.ignore(1, ',') >> p.N_Seg;
+        // Parsing parameter as CSV document with .hsparm file
+        auto trim = [](std::string& s) {
+            const auto first = s.find_first_not_of(" \t\r\n");
+            if (first == std::string::npos) {
+                s.clear();
+                return;
+            }
+            const auto last = s.find_last_not_of(" \t\r\n");
+            s = s.substr(first, last - first + 1);
+        };
+
+        std::string line;
+        while (std::getline(in, line)) {
+            auto comma = line.find(',');
+            if (comma == std::string::npos) continue;
+
+            std::string key = line.substr(0, comma);
+            std::string value = line.substr(comma + 1);
+            trim(key);
+            trim(value);
+
+            try {
+                if (key == "HMS") p.HMS = std::stoi(value);
+                else if (key == "HMCR") p.HMCR = std::stod(value);
+                else if (key == "PAR") p.PAR = std::stod(value);
+                else if (key == "MaxImp") p.MaxImp = static_cast<unsigned int>(std::stoul(value));
+                else if (key == "N_Seg") p.N_Seg = std::stoi(value);
+            } catch (...) {
+                continue;
+            }
         }
         return p;
     }
 
+    /**
+     * @brief Manually updates the HS parameters with new values.
+     * @param param Reference to the HSParams object to be modified.
+     * @param HMS Harmony Memory Size.
+     * @param HMCR Harmony Memory Consideration Rate.
+     * @param PAR Pitch Adjustment Rate.
+     * @param maxiter Maximum number of improvisations (MaxImp).
+     */
     void editParams(HSParams& param, int HMS, double HMCR, double PAR, unsigned int maxiter) {
         param.HMS = HMS;
         param.HMCR = HMCR;
         param.PAR = PAR;
         param.MaxImp = maxiter;
     }
-
-} // namespace hsl
+}

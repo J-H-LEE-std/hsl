@@ -1,21 +1,22 @@
+/**
+ * @file io.h
+ * @brief Header file for define standard stream.
+ * @author Lee Jaehyeong(J-H-LEE-std)
+ * @date 2025-11-28
+ */
+
 #ifndef HSL_IO_H
 #define HSL_IO_H
 
 #include <iostream>
 
 namespace hsl {
-
     /**
-     * @brief HS-L 공용 출력 스트림.
-     *
-     * - CLI 빌드에서는 std::cout으로 연결된다.
-     * - GUI 빌드에서는 hslgui::Bridge::cout으로 연결된다.
-     *
-     * 사용 예:
-     *   hsl::cout << "[INFO] Optimization started..." << std::endl;
+     * @brief Define out stream commaonly used in HS-L.
+     * For CLI, hsl::cout is connected to std::cout.
+     * For GUI, hsl::cout is connected to hslgui::Bridge::cout.
      */
     extern std::ostream& cout;
-
-} // namespace hsl
+}
 
 #endif // HSL_IO_H

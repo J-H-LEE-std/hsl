@@ -1,3 +1,10 @@
+/**
+ * @file main.cpp
+ * @brief Main enter point for GUI program.
+ * @author Lee Jaehyeong(J-H-LEE-std)
+ * @date 2025-10-05
+ */
+
 #include <wx/wx.h>
 #include "gui/mainwindow.h"
 
@@ -10,4 +17,4 @@ public:
     }
 };
 
-wxIMPLEMENT_APP(HSApp); //cli 프로그램은 따로 climain에서 처리
+wxIMPLEMENT_APP(HSApp); // CLI program is processed separately in climain.cpp.

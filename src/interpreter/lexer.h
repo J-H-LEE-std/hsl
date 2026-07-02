@@ -1,3 +1,10 @@
+/**
+ * @file lexer.h
+ * @brief Header file for lexer class defination.
+ * @author Lee Jaehyeong(J-H-LEE-std)
+ * @date 2025-10-05
+ */
+
 #ifndef HSL_LEXER_
 #define HSL_LEXER_
 
@@ -9,14 +16,13 @@ namespace hsl{
     public:
         explicit Lexer(std::string input);
 
-        // 토큰 하나 반환
-        Token nextToken();
+        Token nextToken(); // Return next token.
 
     private:
         std::string input;
-        size_t pos;      // 현재 읽고 있는 위치
-        size_t readPos;  // 다음 읽을 위치
-        char ch;         // 현재 문자
+        size_t pos; // Current position.
+        size_t readPos; // Next position.
+        char ch; // Current reading character.
         int line;
         int column;
 
@@ -26,11 +32,10 @@ namespace hsl{
         void skipComment();
         Token readIdentifier();
         Token readNumber();
-        Token readSectionKeyword(); // [OBJ], [VAR], [ST], [END] 처리용
+        Token readSectionKeyword(); // Method for reading section keyword tokens.
         static TokenType lookupIdent(const std::string &ident);
         void skipIrrelevant();
     };
-
 }
 
 #endif

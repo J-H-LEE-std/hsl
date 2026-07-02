@@ -1,3 +1,10 @@
+/**
+ * @file token.h
+ * @brief Header file defining token for interpret HS-L source code.
+ * @author Lee Jaehyeong(J-H-LEE-std)
+ * @date 2025-10-05
+ */
+
 #ifndef HSL_TOKEN_
 #define HSL_TOKEN_
 
@@ -5,31 +12,30 @@
 
 namespace hsl {
     enum class TokenType {
-        // 키워드
-        OBJ, VAR, ST, END,
+        // keyword
+        OBJ, VAR, DEFCONST, DEFFUNC, ST, END,
         MAX, MIN,
         INT, ANY,
 
-        // 리터럴
-        IDENT,      // 변수명, 함수명
-        NUMBER_INT, NUMBER_FLOAT,     // 정수/실수(double)
+        // literal
+        IDENT, // Identical name for function or variable.
+        NUMBER_INT, NUMBER_FLOAT, // Integer or float number.
 
-        // 연산자
+        // operators
         PLUS, MINUS, ASTERISK, SLASH,
         LPAREN, RPAREN, LBRACKET, RBRACKET, COMMA,
         LEQ, GEQ, LT, GT, EQ, NEQ, CARET, RANGE,
 
-        // 기타
+        // special tokens.
         END_OF_FILE, ILLEGAL,
     };
 
     struct Token {
         TokenType type;
-        std::string literal{}; // 추후 필요 시에 확장
+        std::string literal{};
         int line = 0;
         int column = 0;
     };
-
 }
 
 #endif

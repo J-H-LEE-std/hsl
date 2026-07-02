@@ -13,10 +13,8 @@ if(MSVC)
 endif()
 
 add_compile_options(
-    $<$<C_COMPILER_ID:MSVC>:/utf-8>
     $<$<CXX_COMPILER_ID:MSVC>:/utf-8>
     $<$<CXX_COMPILER_ID:MSVC>:/permissive->
-    $<$<NOT:$<C_COMPILER_ID:MSVC>>:-finput-charset=UTF-8>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-finput-charset=UTF-8>
 )
 
@@ -32,16 +30,19 @@ set(HSL_CORE_SRC
     src/hs/io.cpp 
     src/hs/hsalgorithm.cpp
     src/hs/runner.cpp
+    src/log/ExperimentLogger.cpp
     src/interpreter/evaluator.cpp
     src/interpreter/func.cpp
     src/interpreter/lexer.cpp
     src/interpreter/parser.cpp
     src/utils/printer.cpp
+    src/utils/timing.cpp
 )
 set(HSL_CORE_HDR
     src/hs/io.h 
     src/hs/hsalgorithm.h
     src/hs/params.h    src/hs/runner.h
+    src/log/ExperimentLogger.h
     src/interpreter/ast.h
     src/interpreter/evaluator.h
     src/interpreter/func.h
@@ -49,6 +50,7 @@ set(HSL_CORE_HDR
     src/interpreter/parser.h
     src/interpreter/token.h
     src/utils/printer.h
+    src/utils/timing.h
 )
 add_library(hsl_core STATIC ${HSL_CORE_SRC} ${HSL_CORE_HDR})
 target_include_directories(hsl_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -61,25 +63,68 @@ if(UNIX AND NOT APPLE)
 endif()
 
 set(wxWidgets_USE_STATIC ON)
+set(wxWidgets_USE_UNICODE ON)
 set(wxBUILD_SHARED OFF CACHE BOOL "Build wxWidgets as static libs" FORCE)
 
-find_package(wxWidgets COMPONENTS core base aui html adv net xml REQUIRED)
+if(WIN32)
+    if(NOT wxWidgets_ROOT_DIR AND DEFINED ENV{WXWIN})
+        file(TO_CMAKE_PATH "$ENV{WXWIN}" wxWidgets_ROOT_DIR)
+    endif()
+
+    if(wxWidgets_ROOT_DIR AND NOT wxWidgets_LIB_DIR)
+        set(_wx_candidate_lib_dirs
+            "${wxWidgets_ROOT_DIR}/lib/vc_x64_lib"
+            "${wxWidgets_ROOT_DIR}/lib/vc_lib"
+        )
+
+        foreach(_wx_lib_dir IN LISTS _wx_candidate_lib_dirs)
+            if(
+                EXISTS "${_wx_lib_dir}/mswu/wx/setup.h"
+                OR EXISTS "${_wx_lib_dir}/mswud/wx/setup.h"
+                OR EXISTS "${_wx_lib_dir}/msw/wx/setup.h"
+                OR EXISTS "${_wx_lib_dir}/mswd/wx/setup.h"
+            )
+                set(wxWidgets_LIB_DIR "${_wx_lib_dir}" CACHE PATH "wxWidgets library directory" FORCE)
+                break()
+            endif()
+        endforeach()
+
+        unset(_wx_candidate_lib_dirs)
+        unset(_wx_lib_dir)
+    endif()
+endif()
+
+set(_wx_components core base aui html adv net xml)
+
+if(WIN32)
+    find_package(wxWidgets MODULE QUIET COMPONENTS ${_wx_components})
+else()
+    find_package(wxWidgets QUIET COMPONENTS ${_wx_components})
+endif()
+
+unset(_wx_components)
+
 if(wxWidgets_FOUND)
     message(STATUS "Found wxWidgets: ${wxWidgets_LIBRARIES}")
-    include(${wxWidgets_USE_FILE})
+    if(wxWidgets_USE_FILE)
+        include(${wxWidgets_USE_FILE})
+    endif()
 
     set(HSL_GUI_SRC
         src/main.cpp
         src/gui/mainwindow.cpp
         src/gui/parmwindow.cpp
+        src/gui/jsonlogwindow.cpp
         src/gui/bridge.cpp
         src/gui/io_gui.cpp
     )
     set(HSL_GUI_HDR
         src/gui/mainwindow.h
         src/gui/parmwindow.h
+        src/gui/jsonlogwindow.h
         src/gui/bridge.h
         src/gui/paramstruct.h
+        src/gui/jsonlogsettings.h
     )
 
     if(WIN32)
@@ -109,5 +154,10 @@ if(wxWidgets_FOUND)
     endif()
 
 else()
-    message(WARNING "wxWidgets not found. Skipping 'hsl_gui' target.")
+    message(WARNING
+        "wxWidgets not found. GUI target 'hsl_gui' will be skipped. "
+        "On Windows, use a standard wxWidgets MSW build layout and set "
+        "wxWidgets_ROOT_DIR (or environment variable WXWIN) so CMake can find "
+        "include/wx and lib/vc_x64_lib/mswu/wx/setup.h."
+    )
 endif()

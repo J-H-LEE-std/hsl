@@ -1,9 +1,16 @@
+/**
+ * @file params.h
+ * @brief Header defination for parameter utilized in HS engine.
+ * @author Lee Jaehyeong(J-H-LEE-std)
+ * @date 2025-10-05
+ */
+
 #ifndef HSL_PARAMS_
 #define HSL_PARAMS_
 #include <string>
 
 namespace hsl{
-
+    // Define parameters in HS.
     struct HSParams {
         int HMS = 30;
         double HMCR = 0.95;
